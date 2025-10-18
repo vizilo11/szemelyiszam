@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Személyi Szám Tippelő Játék</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Személyi Azonosító Kvíz 🎲</h1>
+        <p class="info">A magyar személyi azonosító (személyi szám) 11 jegyű, $M\text{ ÉÉHHNN SSSK}$ formátumú. Az utolsó számjegy ($K$) az ellenőrző számjegy, ami az első 10 számjegyből képzett súlyozott összeg alapján kerül meghatározásra (speciális algoritmussal). A játékban egy generált, **matematikailag helyes** személyi azonosító egy számjegye hiányzik. Találd ki a hiányzó számot!</p>
+
+        <div id="szam-megjelenito" class="szemelyi-szam">
+            </div>
+
+        <div id="jatek-terulet">
+            <p><strong>A hiányzó számjegy:</strong></p>
+            <input type="number" id="tipp" min="0" max="9" placeholder="0-9">
+            <button onclick="tippEllenorzes()">Tippelés</button>
+            <button onclick="ujJatek()">Új Szám</button>
+        </div>
+
+        <div id="visszajelzes">
+            </div>
+
+        <div id="statisztika">
+            Összes tipp: <span id="tipp-szamlalo">0</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

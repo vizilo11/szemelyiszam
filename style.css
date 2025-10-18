@@ -1,0 +1,129 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+
+h1 {
+    color: #0056b3;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.info {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 20px;
+    text-align: left;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f9f9ff;
+}
+
+.szemelyi-szam {
+    font-size: 2.5em;
+    font-weight: bold;
+    letter-spacing: 5px;
+    margin: 30px 0;
+    color: #d9534f; /* Piros a hiányzó számjegy miatt */
+}
+
+.szamjegy {
+    display: inline-block;
+    padding: 0 2px;
+}
+
+.hianyzo {
+    color: #5bc0de; /* Kék jelölés a hiányzó helyen */
+    border-bottom: 3px solid #5bc0de;
+    padding: 0 5px;
+}
+
+#jatek-terulet {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+}
+
+#tipp {
+    padding: 10px;
+    font-size: 1.2em;
+    width: 80px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    margin: 5px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+button:first-of-type { /* Tippelés gomb */
+    background-color: #5cb85c;
+    color: white;
+}
+
+button:last-of-type { /* Új szám gomb */
+    background-color: #f0ad4e;
+    color: white;
+}
+
+#visszajelzes {
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    min-height: 40px;
+}
+
+.jo-tipp {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.rossz-tipp {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+#statisztika {
+    margin-top: 25px;
+    font-size: 1.1em;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+#statisztika span {
+    color: #0056b3;
+    font-weight: bold;
+}
