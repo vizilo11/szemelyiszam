@@ -249,12 +249,12 @@
             // a teljes 11 jegyű számnak érvényesnek kell lennie a mod 11 szabály szerint.
             if (isIdValid(guessedFullId)) {
                 // Siker!
-                document.getElementById('message').innerHTML = `<span class="correct">GRATULÁLOK!</span> Sikerült kitalálni! A hiányzó számjegy: <strong>${correctDigit}</strong>. ${attemptCount}. próbálkozásra sikerült a kitalálás.`;
+                document.getElementById('message').innerHTML = `<span class="correct">GRATULÁLOK!</span> Sikerült kitalálni! A hiányzó számjegy: <strong>${correctDigit}</strong>. <br> ${attemptCount}. próbálkozásra sikerült a kitalálás.`;
 
                 // Frissítjük a kijelzőt a helyes számmal
                 let finalId = '';
                 for (let i = 0; i < currentFullId.length; i++) {
-                    if (i === 1 || i === 7 || i === 10) {
+                    if (i === 1 || i === 7) {
                         finalId += ' ';
                     }
                     finalId += currentFullId[i];
