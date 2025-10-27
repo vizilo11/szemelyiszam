@@ -3,32 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Személyi Szám Tippelő Játék</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Személyi Azonosító Kitaláló (11-jegyű)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background-color: #f4f4f9;
+        }
+        .game-container {
+            max-width: 650px; /* Szélesebb konténer az 11 jegy miatt */
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .id-display {
+            font-size: 2.5em;
+            letter-spacing: 12px; /* Kisebb távolság az 11 jegy miatt */
+            margin: 30px 0;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .hidden-digit {
+            color: red;
+            font-style: italic;
+            font-weight: 900;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        #guessInput {
+            width: 50px;
+            padding: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1e7e34;
+        }
+        #message, #attempts {
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Személyi Azonosító Kvíz 🎲</h1>
-        <p class="info">A magyar személyi azonosító (személyi szám) 11 jegyű, $M\text{ ÉÉHHNN SSSK}$ formátumú. Az utolsó számjegy ($K$) az ellenőrző számjegy, ami az első 10 számjegyből képzett súlyozott összeg alapján kerül meghatározásra (speciális algoritmussal). A játékban egy generált, **matematikailag helyes** személyi azonosító egy számjegye hiányzik. Találd ki a hiányzó számot!</p>
 
-        <div id="szam-megjelenito" class="szemelyi-szam">
-            </div>
+    <div class="game-container">
+        <h1>Hiányzó számjegy a személyi azonosítóban</h1>
+        <p>A feladatod kitalálni a <span class="hidden-digit">?</span> helyén lévő hiányzó számjegyet (0-9). </p>
 
-        <div id="jatek-terulet">
-            <p><strong>A hiányzó számjegy:</strong></p>
-            <input type="number" id="tipp" min="0" max="9" placeholder="0-9">
-            <button onclick="tippEllenorzes()">Tippelés</button>
-            <button onclick="ujJatek()">Új Szám</button>
+        <div class="id-display" id="idDisplay"></div>
+
+        <div class="input-group">
+            <label for="guessInput">Tipp (0-9):</label>
+            <input type="number" id="guessInput" min="0" max="9" maxlength="1" onkeypress="handleKeyPress(event)">
+            <button onclick="checkGuess()">Tipp ellenőrzése</button>
         </div>
 
-        <div id="visszajelzes">
-            </div>
+        <div id="attempts">Tippek száma: 0</div>
+        <div id="message"></div>
 
-        <div id="statisztika">
-            Összes tipp: <span id="tipp-szamlalo">0</span>
-        </div>
+        <button id="newGameButton" onclick="startGame()" style="display: none;">Új játék</button>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        let currentFullId = '';
+        let hiddenIndex = -1;
+        let attemptCount = 0;
+        const ID_LENGTH = 11;
+
+        // --- Személyi Azonosító Generálása és Ellenőrzése ---
+
+        /**
+         * Kiszámítja a 11. (ellenőrző) számjegyet a magyar szabályok szerint (súlyozott összeg mod 11).
+         * @param {string} id10Digits - Az azonosító első 10 számjegye.
+         * @returns {number} A 11. számjegy (ellenőrzőszám).
+         */
+        function calculateChecksum(id10Digits) {
+            let sum = 0;
+            // A súlyok 1-től 10-ig
+            const weights = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(id10Digits[i]) * weights[i];
+            }
+            return sum % 11;
+        }
+
+        /**
+         * Érvényes 11-jegyű személyi azonosítót generál.
+         * Kritériu: 3-mal vagy 4-gyel kezdődik, 2000.01.01 utáni születési dátum.
+         * @returns {string} A teljes, valid 11 jegyű azonosító (E11 nem lehet 10).
+         */
+        function generateValidId() {
+            let fullId = '';
+            let checksum;
+
+            do {
+                // 1. Első jegy (E1): 3 (férfi) vagy 4 (nő), 2000 után
+                const e1 = Math.floor(Math.random() * 2) + 3;
+
+                // 2. Születési dátum (E2-E7): 2000.01.01 és 2024.12.31 között
+                const minDate = new Date('2000-01-01').getTime();
+                const maxDate = new Date('2024-12-31').getTime();
+
+                let dob;
+                let yy, mm, dd;
+                let dobString;
+
+                do {
+                    const randomTimestamp = minDate + Math.random() * (maxDate - minDate);
+                    dob = new Date(randomTimestamp);
+                    yy = String(dob.getFullYear()).substring(2);
+                    mm = String(dob.getMonth() + 1).padStart(2, '0');
+                    dd = String(dob.getDate()).padStart(2, '0');
+                    dobString = yy + mm + dd;
+                } while (dobString.length !== 6);
+
+                // 3. Sorszám (E8-E10): 000-999
+                const serial = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+
+                // Első 10 jegy
+                const id10Digits = String(e1) + dobString + serial;
+
+                // 4. Ellenőrzőszám (E11)
+                checksum = calculateChecksum(id10Digits);
+
+                // Ha a checksum 10, akkor újra kell generálni, mivel E11 nem lehet 10
+                if (checksum !== 10) {
+                    fullId = id10Digits + String(checksum);
+                }
+
+            } while (checksum === 10); // Újra generálunk, ha a checksum 10
+
+            return fullId;
+        }
+
+        /**
+         * Ellenőrzi, hogy egy 11-jegyű szám érvényes-e a checksum alapján (mod 11).
+         * @param {string} idString - A teljes 11 jegyű azonosító.
+         * @returns {boolean} Igaz, ha az azonosító valid.
+         */
+        function isIdValid(idString) {
+            if (idString.length !== ID_LENGTH) return false;
+
+            const id10Digits = idString.substring(0, 10);
+            const givenChecksum = parseInt(idString[10]); // E11
+
+            const calculatedChecksum = calculateChecksum(id10Digits);
+
+            // Az ellenőrzőszám nem lehet 10, de a generált azonosító sem tartalmazhat ilyet.
+            if (calculatedChecksum === 10) return false;
+
+            return calculatedChecksum === givenChecksum;
+        }
+
+        // --- Játék Logika (A korábbi logika itt is működik) ---
+
+        function startGame() {
+            currentFullId = generateValidId();
+
+            // Rejtett pozíció: véletlenszerűen 0 és 10 között
+            hiddenIndex = Math.floor(Math.random() * ID_LENGTH);
+
+            attemptCount = 0;
+
+            document.getElementById('guessInput').value = '';
+            document.getElementById('message').textContent = '';
+            document.getElementById('attempts').textContent = 'Tippek száma: 0';
+            document.getElementById('newGameButton').style.display = 'none';
+            document.getElementById('guessInput').disabled = false;
+            document.querySelector('button[onclick="checkGuess()"]').disabled = false;
+
+            displayMaskedId();
+        }
+
+        function displayMaskedId() {
+            let maskedId = '';
+            for (let i = 0; i < currentFullId.length; i++) {
+                // Helyezzünk szóközöket a jobb olvashatóságért (E1 E2-E7 E8-E10 E11)
+                let separator = '';
+                if (i === 1 || i === 7) {
+                    separator = ' ';
+                }
+                maskedId += separator;
+
+                if (i === hiddenIndex) {
+                    maskedId += `<span class="hidden-digit">?</span>`;
+                } else {
+                    maskedId += currentFullId[i];
+                }
+            }
+            document.getElementById('idDisplay').innerHTML = maskedId.trim();
+        }
+
+        function checkGuess() {
+            const guessInput = document.getElementById('guessInput');
+            const guess = guessInput.value.trim();
+
+            if (guess === '' || isNaN(guess) || guess.length !== 1 || parseInt(guess) < 0 || parseInt(guess) > 9) {
+                document.getElementById('message').textContent = 'Kérlek, adj meg egyetlen számjegyet (0-9)!';
+                return;
+            }
+
+            attemptCount++;
+            document.getElementById('attempts').textContent = `Tippek száma: ${attemptCount}`;
+
+            // Kitalált számjegy behelyezése az ID-be
+            const guessedIdArray = currentFullId.split('');
+            guessedIdArray[hiddenIndex] = guess;
+            const guessedFullId = guessedIdArray.join('');
+
+            // A helyes megoldás
+            const correctDigit = currentFullId[hiddenIndex];
+
+            // Érvényességi ellenőrzés
+            // Fontos: Az érvényesség az E11-es ellenőrzőszám szabályán múlik.
+            // Bármelyik számjegy is hiányzik, a helyes szám behelyezése után
+            // a teljes 11 jegyű számnak érvényesnek kell lennie a mod 11 szabály szerint.
+            if (isIdValid(guessedFullId)) {
+                // Siker!
+                document.getElementById('message').innerHTML = `<span class="correct">GRATULÁLOK!</span> Sikerült kitalálni! A hiányzó számjegy: <strong>${correctDigit}</strong>. ${attemptCount}. próbálkozásra sikerült a kitalálás.`;
+
+                // Frissítjük a kijelzőt a helyes számmal
+                let finalId = '';
+                for (let i = 0; i < currentFullId.length; i++) {
+                    if (i === 1 || i === 7 || i === 10) {
+                        finalId += ' ';
+                    }
+                    finalId += currentFullId[i];
+                }
+                document.getElementById('idDisplay').innerHTML = `<span class="correct">${finalId.trim()}</span>`;
+
+                endGame();
+            } else {
+                // Nem jó tipp
+                document.getElementById('message').innerHTML = `<span class="incorrect">Helytelen tipp.</span> Próbáld újra! (A tippelt számjegy: ${guess})`;
+                guessInput.value = '';
+            }
+        }
+
+        function endGame() {
+            document.getElementById('guessInput').disabled = true;
+            document.querySelector('button[onclick="checkGuess()"]').disabled = true;
+            document.getElementById('newGameButton').style.display = 'inline-block';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkGuess();
+            }
+        }
+
+        // Indítás
+        document.addEventListener('DOMContentLoaded', startGame);
+    </script>
+
 </body>
 </html>
